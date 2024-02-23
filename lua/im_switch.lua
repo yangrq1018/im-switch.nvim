@@ -17,7 +17,8 @@ end
 local switch = {
   text = {
     "*.md",
-    "*.txt"
+    "*.txt",
+    "*.tex"
   },
   code = {
     "*",
