@@ -1,5 +1,11 @@
--- im auto switch on Linux
+-- IM (Input Method) auto switch on Linux
 -- credit to https://github.com/Kicamon/nvim
+--
+-- About this plugin module loading:
+-- Lazy.nvim has a non-exact matching algo for finding
+-- the right module to require.
+
+
 local M = {}
 
 local ts_utils = require('nvim-treesitter.ts_utils')
@@ -7,12 +13,6 @@ local ts_utils = require('nvim-treesitter.ts_utils')
 local C = {
   toggle_comment = false,
 }
-
-local function set_opts(opts)
-  if opts.toggle_comment ~= nil then
-    C.toggle_comment = opts.toggle_comment
-  end
-end
 
 local switch = {
   text = {
@@ -27,6 +27,24 @@ local switch = {
   zh = "fcitx5-remote -o",
   check = "fcitx5-remote",
 }
+
+-- This function should go after variable switch and
+-- variable C, else get undefined global variable error.
+local function set_opts(opts)
+  if opts.toggle_comment ~= nil then
+    C.toggle_comment = opts.toggle_comment
+  end
+
+  if opts.switch ~= nil then
+    if opts.switch.text ~= nil then
+      switch.text = opts.switch.text
+    end
+
+    if opts.switch.code ~= nil then
+      switch.code = opts.switch.code
+    end
+  end
+end
 
 local input_toggle = 1
 
