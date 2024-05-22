@@ -105,57 +105,62 @@ local function filetype_checke()
   end
 end
 
-vim.api.nvim_create_autocmd("InsertLeave", {
-  callback = function()
-    En()
-  end
-})
-vim.api.nvim_create_autocmd("InsertEnter", {
-  pattern = switch.text,
-  callback = function()
-    if filetype_checke() then
-      Zh()
+local function autocmd()
+  vim.api.nvim_create_autocmd("InsertLeave", {
+    callback = function()
+      En()
     end
-  end
-})
+  })
 
-vim.api.nvim_create_autocmd("InsertEnter", {
-  pattern = switch.code,
-  callback = function()
-    local current_pos = vim.fn.getcurpos()
-    current_pos[3] = current_pos[3] - 1
-    vim.fn.setpos('.', current_pos)
-    local previous_node = ts_utils.get_node_at_cursor()
+  vim.api.nvim_create_autocmd("InsertEnter", {
+    pattern = switch.text,
+    callback = function()
+      if filetype_checke() then
+        Zh()
+      end
+    end
+  })
 
-    if C.toggle_comment and previous_node and (previous_node:type() == 'comment' or previous_node:type() == 'comment_content') then
-      Zh()
-    end
-  end
-})
+  vim.api.nvim_create_autocmd("InsertEnter", {
+    pattern = switch.code,
+    callback = function()
+      local current_pos = vim.fn.getcurpos()
+      current_pos[3] = current_pos[3] - 1
+      vim.fn.setpos('.', current_pos)
+      local previous_node = ts_utils.get_node_at_cursor()
 
-vim.api.nvim_create_autocmd("TextChangedI", {
-  pattern = switch.code,
-  callback = function()
-    if (vim.bo.filetype == 'python' or vim.bo.filetype == 'sh') and vim.fn.line('.') == 1 then
-      return
+      if C.toggle_comment and previous_node and (previous_node:type() == 'comment' or previous_node:type() == 'comment_content') then
+        Zh()
+      end
     end
-    local current_pos = vim.fn.getcurpos()
-    current_pos[3] = current_pos[3] - 1
-    vim.fn.setpos('.', current_pos)
-    local previous_node = ts_utils.get_node_at_cursor()
-    if C.input_toggle and previous_node and (previous_node:type() == 'comment' or previous_node:type() == 'comment_content') then
-      Zh()
+  })
+
+  vim.api.nvim_create_autocmd("TextChangedI", {
+    pattern = switch.code,
+    callback = function()
+      if (vim.bo.filetype == 'python' or vim.bo.filetype == 'sh') and vim.fn.line('.') == 1 then
+        return
+      end
+      local current_pos = vim.fn.getcurpos()
+      current_pos[3] = current_pos[3] - 1
+      vim.fn.setpos('.', current_pos)
+      local previous_node = ts_utils.get_node_at_cursor()
+      if C.input_toggle and previous_node and (previous_node:type() == 'comment' or previous_node:type() == 'comment_content') then
+        Zh()
+      end
+      current_pos[3] = current_pos[3] + 1
+      vim.fn.setpos('.', current_pos)
     end
-    current_pos[3] = current_pos[3] + 1
-    vim.fn.setpos('.', current_pos)
-  end
-})
+  })
+end
 
 M.setup = function(opts)
   if opts == nil or type(opts) ~= "table" then
     return
   end
   set_opts(opts)
+  -- Create the autocommands after options are set.
+  autocmd()
 end
 
 return M
